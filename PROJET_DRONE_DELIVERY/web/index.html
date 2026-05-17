@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drone Delivery SMA — UEMF</title>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter font (Linear/Vercel style) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body class="min-h-screen text-slate-100 antialiased">
+
+    <!-- ====================================================================
+         BACKGROUND : gradient + grille subtile + halos colorés
+         ==================================================================== -->
+    <div class="fixed inset-0 -z-10 bg-bg pointer-events-none">
+        <div class="absolute inset-0 grid-bg opacity-40"></div>
+        <div class="halo halo-cyan"></div>
+        <div class="halo halo-purple"></div>
+        <div class="halo halo-pink"></div>
+    </div>
+
+    <!-- ====================================================================
+         HEADER
+         ==================================================================== -->
+    <header class="px-8 py-5 flex items-center justify-between border-b border-white/5 backdrop-blur-sm">
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                    <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-bg pulse-dot"></span>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">
+                    DRONE DELIVERY
+                </h1>
+                <p class="text-xs text-slate-400 font-mono tracking-wider">
+                    SYSTÈME MULTI-AGENTS · UEMF FÈS
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div id="connection-pill" class="px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 flex items-center gap-2 text-xs">
+                <span id="connection-dot" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                <span id="connection-text" class="font-mono">CONNEXION...</span>
+            </div>
+            <div class="px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-xs font-mono text-slate-300">
+                <span id="weather-pill">☀ CLEAR</span>
+            </div>
+            <div class="px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-xs font-mono text-slate-300">
+                <i data-lucide="clock" class="w-3 h-3 inline -mt-px"></i>
+                <span id="clock">--:--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================================================================
+         MAIN GRID
+         ==================================================================== -->
+    <main class="grid grid-cols-12 gap-4 p-4">
+
+        <!-- LEFT SIDEBAR : Stats cards + Fleet -->
+        <aside class="col-span-3 space-y-4">
+
+            <!-- Stats cards (2x2) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card-glass p-4">
+                    <div class="text-[10px] text-slate-400 font-mono mb-1">COMMANDES</div>
+                    <div class="text-3xl font-bold text-cyan-300" id="stat-total">0</div>
+                    <div class="text-xs text-slate-500">total</div>
+                </div>
+                <div class="card-glass p-4">
+                    <div class="text-[10px] text-slate-400 font-mono mb-1">EN COURS</div>
+                    <div class="text-3xl font-bold text-amber-300" id="stat-active">0</div>
+                    <div class="text-xs text-slate-500">live</div>
+                </div>
+                <div class="card-glass p-4">
+                    <div class="text-[10px] text-slate-400 font-mono mb-1">LIVRÉES</div>
+                    <div class="text-3xl font-bold text-emerald-300" id="stat-delivered">0</div>
+                    <div class="text-xs text-slate-500">succès</div>
+                </div>
+                <div class="card-glass p-4">
+                    <div class="text-[10px] text-slate-400 font-mono mb-1">ÉCHECS</div>
+                    <div class="text-3xl font-bold text-rose-300" id="stat-failed">0</div>
+                    <div class="text-xs text-slate-500">erreurs</div>
+                </div>
+            </div>
+
+            <!-- Mini graphique : success rate gauge -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200">Taux de réussite</h3>
+                    <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div class="relative h-24">
+                    <canvas id="success-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Fleet drones -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="bot" class="w-4 h-4 text-cyan-400"></i>
+                        Flotte
+                    </h3>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                        <span id="fleet-count">0</span> agents
+                    </span>
+                </div>
+                <div id="fleet-list" class="space-y-2.5">
+                    <!-- injecté par JS -->
+                    <div class="text-xs text-slate-500 text-center py-6">
+                        En attente des agents...
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- CENTER : Map + Architecture diagram -->
+        <section class="col-span-6 space-y-4">
+
+            <!-- Map header -->
+            <div class="card-glass overflow-hidden">
+                <div class="px-4 py-3 flex items-center justify-between border-b border-white/5">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="map" class="w-4 h-4 text-cyan-400"></i>
+                            Carte en temps réel — Fès, Maroc
+                        </h2>
+                        <p class="text-[10px] text-slate-500 font-mono mt-0.5">
+                            UEMF Eco-Campus · Rond-Point Bensouda · 34.04501°N, -5.06529°W
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span class="text-slate-400">Idle</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span class="text-slate-400">Pickup</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span><span class="text-slate-400">Carrying</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-fuchsia-400"></span><span class="text-slate-400">Charging</span></span>
+                    </div>
+                </div>
+                <div id="map" class="h-[520px] w-full"></div>
+            </div>
+
+            <!-- Architecture diagram (FIPA-ACL Contract-Net) -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="network" class="w-4 h-4 text-fuchsia-400"></i>
+                        Contract-Net Protocol (FIPA-ACL)
+                    </h3>
+                    <span class="text-[10px] font-mono text-slate-500">FIPA00029</span>
+                </div>
+                <div class="grid grid-cols-5 gap-2 items-center text-center text-xs">
+                    <div class="protocol-step">
+                        <div class="protocol-icon bg-rose-500/20 text-rose-300">1</div>
+                        <div class="text-slate-300 font-medium">REQUEST</div>
+                        <div class="text-[10px] text-slate-500">Customer</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-auto"></i>
+                    <div class="protocol-step">
+                        <div class="protocol-icon bg-cyan-500/20 text-cyan-300">2</div>
+                        <div class="text-slate-300 font-medium">CFP</div>
+                        <div class="text-[10px] text-slate-500">→ N drones</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-auto"></i>
+                    <div class="protocol-step">
+                        <div class="protocol-icon bg-amber-500/20 text-amber-300">3</div>
+                        <div class="text-slate-300 font-medium">PROPOSE</div>
+                        <div class="text-[10px] text-slate-500">avec coût ML</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-5 gap-2 items-center text-center text-xs mt-3">
+                    <div></div><div></div>
+                    <div class="protocol-step">
+                        <div class="protocol-icon bg-fuchsia-500/20 text-fuchsia-300">4</div>
+                        <div class="text-slate-300 font-medium">ACCEPT</div>
+                        <div class="text-[10px] text-slate-500">Dispatcher</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-auto"></i>
+                    <div class="protocol-step">
+                        <div class="protocol-icon bg-emerald-500/20 text-emerald-300">5</div>
+                        <div class="text-slate-300 font-medium">INFORM</div>
+                        <div class="text-[10px] text-slate-500">livré ✓</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT SIDEBAR : Events log + Performance + Active orders -->
+        <aside class="col-span-3 space-y-4">
+
+            <!-- Performance over time -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                        Performance
+                    </h3>
+                    <span class="text-[10px] font-mono text-slate-500">temps réel</span>
+                </div>
+                <div class="relative h-32">
+                    <canvas id="performance-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Active orders -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="package" class="w-4 h-4 text-amber-400"></i>
+                        Commandes actives
+                    </h3>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        <span id="orders-count">0</span>
+                    </span>
+                </div>
+                <div id="orders-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    <div class="text-xs text-slate-500 text-center py-6">
+                        Aucune commande active.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events log -->
+            <div class="card-glass p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="radio" class="w-4 h-4 text-cyan-400"></i>
+                        Événements
+                    </h3>
+                    <span class="text-[10px] font-mono text-slate-500" id="events-counter">0</span>
+                </div>
+                <div id="events-list" class="space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar text-xs font-mono">
+                    <div class="text-slate-500 text-center py-6">
+                        En attente d'événements...
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- ====================================================================
+         PANNEAU FLOTTANT : Passer une commande (style Uber Eats)
+         ==================================================================== -->
+    <div id="order-panel" class="fixed bottom-6 right-6 z-50 w-80 card-glass overflow-hidden shadow-2xl"
+         style="box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(34, 211, 238, 0.15);">
+
+        <!-- Header du panneau (clic pour collapse) -->
+        <button id="order-toggle" class="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 border-b border-white/5 hover:from-cyan-500/25 hover:to-fuchsia-500/25 transition">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-cyan-500/40">
+                    <i data-lucide="package-plus" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="text-left">
+                    <div class="text-sm font-semibold text-slate-100">Passer une commande</div>
+                    <div class="text-[10px] text-slate-400 font-mono">Un drone te livrera</div>
+                </div>
+            </div>
+            <i id="order-chevron" data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition"></i>
+        </button>
+
+        <!-- Corps du formulaire -->
+        <div id="order-body" class="p-4 space-y-3">
+            <!-- Nom client -->
+            <div>
+                <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                    👤 Ton nom
+                </label>
+                <input type="text" id="order-name" placeholder="Ex: Ibtissam"
+                    value="Ibtissam"
+                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-400/50 focus:bg-white/8 outline-none transition">
+            </div>
+
+            <!-- Description du colis -->
+            <div>
+                <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                    📦 Que veux-tu commander ?
+                </label>
+                <input type="text" id="order-desc" placeholder="Ex: Pizza, médicament..."
+                    value="Pizza Margherita"
+                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-400/50 focus:bg-white/8 outline-none transition">
+            </div>
+
+            <!-- ===== Suggestions de restaurants de Fès ===== -->
+            <div>
+                <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                    🍴 Choisir un lieu de retrait
+                </label>
+                <select id="restaurant-select"
+                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-amber-400/50 outline-none transition">
+                    <option value="">— Sélectionner un restaurant —</option>
+                </select>
+            </div>
+
+            <!-- Pickup manuel via clic sur la carte -->
+            <button id="btn-set-pickup" class="w-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 hover:border-amber-500/50 text-amber-200 rounded-lg px-3 py-2.5 text-xs font-semibold flex items-center justify-between transition">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 shadow-amber-400 shadow-md"></span>
+                    <span id="pickup-label">Ou clique sur la carte</span>
+                </span>
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+            </button>
+
+            <!-- Dropoff -->
+            <button id="btn-set-dropoff" class="w-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 hover:border-cyan-500/50 text-cyan-200 rounded-lg px-3 py-2.5 text-xs font-semibold flex items-center justify-between transition">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-cyan-400 shadow-md"></span>
+                    <span id="dropoff-label">Définir point de livraison</span>
+                </span>
+                <i data-lucide="target" class="w-3.5 h-3.5"></i>
+            </button>
+
+            <!-- Hint -->
+            <div id="order-hint" class="text-[10px] text-slate-500 italic text-center py-1">
+                💡 Clique sur les boutons puis sur la carte
+            </div>
+
+            <!-- Send button -->
+            <button id="btn-send-order" disabled
+                class="w-full bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white font-semibold rounded-lg px-3 py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-cyan-500/40 transition">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Envoyer la commande</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast container (notifications) -->
+    <div id="toast-container" class="fixed top-20 right-6 z-[100] space-y-2 pointer-events-none"></div>
+
+    <!-- ====================================================================
+         FOOTER
+         ==================================================================== -->
+    <footer class="px-8 py-4 mt-2 border-t border-white/5 text-xs text-slate-500 flex items-center justify-between font-mono">
+        <div>
+            <span class="text-slate-400">Drone Delivery SMA</span> · Projet de fin de module
+            · <span class="text-cyan-400">Ibtissam EL HICHOU</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span>SPADE 4.x · FastAPI · Leaflet · Tailwind</span>
+            <span class="text-slate-400">UEMF · 2025-2026</span>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- App JS -->
+    <script src="/static/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,809 @@
+/* =============================================================================
+ * STYLE.CSS — Design Glassmorphism cyberpunk pro
+ * Inspiré de Linear / Vercel / Stripe / Apple Vision OS
+ * ============================================================================= */
+
+/* ---------- Variables globales ---------- */
+:root {
+    --bg-deep: #060814;
+    --bg-elevated: #0c1020;
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-strong: rgba(255, 255, 255, 0.07);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --neon-cyan: #22d3ee;
+    --neon-fuchsia: #d946ef;
+    --neon-emerald: #34d399;
+    --neon-amber: #fbbf24;
+    --neon-rose: #fb7185;
+    --neon-violet: #a78bfa;
+}
+
+/* ---------- Reset + typo ---------- */
+* { box-sizing: border-box; }
+
+html, body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss03', 'ss01';
+    background: var(--bg-deep);
+    color: #e2e8f0;
+}
+
+code, .font-mono, [class*="font-mono"] {
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace !important;
+}
+
+.bg-bg { background-color: var(--bg-deep); }
+
+/* ---------- BACKGROUND — grille + halos animés ---------- */
+.grid-bg {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+.halo {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.25;
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite;
+}
+
+.halo-cyan {
+    width: 600px; height: 600px;
+    top: -200px; left: -200px;
+    background: var(--neon-cyan);
+}
+
+.halo-purple {
+    width: 500px; height: 500px;
+    bottom: -150px; right: -150px;
+    background: var(--neon-violet);
+    animation-delay: -5s;
+}
+
+.halo-pink {
+    width: 400px; height: 400px;
+    top: 40%; right: 30%;
+    background: var(--neon-fuchsia);
+    opacity: 0.15;
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(40px, -30px) scale(1.05); }
+    66%      { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+/* ---------- CARDS GLASS ---------- */
+.card-glass {
+    background: var(--surface);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: border-color 0.25s, background 0.25s;
+}
+
+.card-glass:hover {
+    border-color: var(--border-strong);
+}
+
+/* ---------- PULSE DOT (connexion) ---------- */
+.pulse-dot {
+    box-shadow: 0 0 0 0 currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+    70%  { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+/* ---------- PROTOCOL STEPS (FIPA-ACL diagram) ---------- */
+.protocol-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.protocol-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid currentColor;
+}
+
+/* ---------- DRONE FLEET CARDS ---------- */
+.drone-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.drone-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--neon-cyan);
+    border-radius: 3px 0 0 3px;
+    transition: background 0.2s;
+}
+
+.drone-card[data-status="idle"]::before              { background: var(--neon-emerald); }
+.drone-card[data-status="moving_to_pickup"]::before  { background: var(--neon-amber); }
+.drone-card[data-status="carrying"]::before          { background: #fb923c; }
+.drone-card[data-status="moving_to_station"]::before { background: var(--neon-rose); }
+.drone-card[data-status="charging"]::before          { background: var(--neon-fuchsia); }
+
+.drone-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(2px);
+}
+
+.drone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.drone-name {
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+.drone-status {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.drone-status.idle              { color: var(--neon-emerald); }
+.drone-status.moving_to_pickup  { color: var(--neon-amber); }
+.drone-status.carrying          { color: #fb923c; }
+.drone-status.moving_to_station { color: var(--neon-rose); }
+.drone-status.charging          { color: var(--neon-fuchsia); }
+
+.battery-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.battery-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease, background 0.3s;
+    position: relative;
+}
+
+.battery-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.battery-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ---------- ORDER CARDS ---------- */
+.order-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 11px;
+    transition: all 0.2s;
+}
+
+.order-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.order-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.order-route {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #cbd5e1;
+    margin-top: 3px;
+}
+
+/* ---------- EVENTS LIST ---------- */
+.event-item {
+    padding: 5px 8px;
+    border-left: 2px solid var(--border-subtle);
+    color: #94a3b8;
+    transition: all 0.2s;
+    border-radius: 0 6px 6px 0;
+    animation: slideIn 0.3s ease;
+}
+
+.event-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #cbd5e1;
+    border-left-color: var(--neon-cyan);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- CUSTOM SCROLLBAR ---------- */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- LEAFLET — Carte couleur (style Google Maps moderne) ---------- */
+.leaflet-container {
+    background: #e8eef3 !important;
+    font-family: 'Inter', sans-serif !important;
+    border-radius: 0 0 16px 16px;
+}
+
+/* On garde les tuiles dans leurs couleurs naturelles, juste un léger boost saturation */
+.leaflet-tile {
+    filter: saturate(1.1) contrast(1.05);
+}
+
+.leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #475569 !important;
+    font-size: 9px !important;
+    backdrop-filter: blur(8px);
+    border-radius: 4px;
+}
+
+.leaflet-control-attribution a {
+    color: #0891b2 !important;
+}
+
+.leaflet-control-zoom {
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-control-zoom a {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1e293b !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+.leaflet-control-zoom a:hover {
+    background: #22d3ee !important;
+    color: #ffffff !important;
+}
+
+/* Tooltip Leaflet harmonisé avec le thème */
+.leaflet-tooltip {
+    background: rgba(12, 16, 32, 0.95) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(34, 211, 238, 0.4) !important;
+    border-radius: 6px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(8px);
+}
+
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+    border-top-color: rgba(34, 211, 238, 0.5) !important;
+}
+
+/* Popup Leaflet */
+.leaflet-popup-content-wrapper {
+    background: rgba(12, 16, 32, 0.96) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(34, 211, 238, 0.4) !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(12px);
+}
+
+.leaflet-popup-tip {
+    background: rgba(12, 16, 32, 0.96) !important;
+}
+
+/* Contrôle de couches (basculer satellite / carte / OSM) — style glassmorphism */
+.leaflet-control-layers {
+    background: rgba(12, 16, 32, 0.92) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(34, 211, 238, 0.35) !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    padding: 6px 4px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.leaflet-control-layers-expanded {
+    padding: 10px 12px !important;
+    min-width: 160px;
+}
+
+.leaflet-control-layers label {
+    color: #e2e8f0 !important;
+    font-size: 12px !important;
+    padding: 4px 0 !important;
+    cursor: pointer;
+}
+
+.leaflet-control-layers label:hover {
+    color: var(--neon-cyan) !important;
+}
+
+.leaflet-control-layers input[type="radio"],
+.leaflet-control-layers input[type="checkbox"] {
+    accent-color: var(--neon-cyan);
+    margin-right: 6px;
+}
+
+.leaflet-control-layers-separator {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 6px 0 !important;
+}
+
+.leaflet-control-layers-toggle {
+    background-color: rgba(12, 16, 32, 0.92) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%2322d3ee' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolygon points='12 2 2 7 12 12 22 7 12 2'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E") !important;
+    background-size: 20px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    border-radius: 8px !important;
+}
+
+/* ============================================================================
+   DRONE TACTICAL PRO (style DJI Phantom vue de dessus)
+   ============================================================================ */
+.drone-marker {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    transition: filter 0.3s;
+}
+
+/* Ombre portée au sol (suggère altitude) */
+.drone-marker .drone-shadow {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 8px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 70%);
+    border-radius: 50%;
+    filter: blur(2px);
+    z-index: 0;
+    animation: shadow-bob 2.5s ease-in-out infinite;
+}
+
+@keyframes shadow-bob {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+    50%      { transform: translateX(-50%) scale(0.92); opacity: 0.7; }
+}
+
+/* Halo pulsant autour du drone (couleur selon status) */
+.drone-marker .pulse {
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    animation: drone-pulse 1.8s ease-out infinite;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes drone-pulse {
+    0%   { transform: scale(0.7); opacity: 0.55; }
+    100% { transform: scale(1.15); opacity: 0; }
+}
+
+/* Anneau SVG de la batterie autour du drone */
+.drone-marker .battery-ring {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Châssis SVG du drone (avec light bobbing pour effet vol) */
+.drone-marker .drone-body {
+    position: absolute;
+    inset: 4px;
+    z-index: 3;
+    filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 4px 6px rgba(0,0,0,0.55));
+    animation: drone-bob 2.5s ease-in-out infinite;
+}
+
+@keyframes drone-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-1.5px); }
+}
+
+/* ----- ROTORS animés avec MOTION BLUR (effet pales en rotation rapide) ----- */
+.drone-marker .rotors-container {
+    position: absolute;
+    inset: 4px;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.drone-marker .rotor {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    /* Effet "disque flou" simulant les pales en rotation rapide */
+    background:
+        radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 45%, transparent 70%),
+        conic-gradient(from 0deg,
+            rgba(200,220,255,0.25) 0deg,
+            transparent 60deg,
+            rgba(200,220,255,0.45) 110deg,
+            transparent 170deg,
+            rgba(200,220,255,0.25) 240deg,
+            transparent 300deg,
+            rgba(200,220,255,0.45) 350deg);
+    animation: rotor-spin 0.15s linear infinite;
+    filter: blur(0.4px);
+    box-shadow:
+        inset 0 0 6px rgba(255,255,255,0.2),
+        0 0 4px rgba(255,255,255,0.15);
+}
+
+.drone-marker .rotor-tl { top: -5px;    left: -5px; }
+.drone-marker .rotor-tr { top: -5px;    right: -5px; }
+.drone-marker .rotor-bl { bottom: -5px; left: -5px; }
+.drone-marker .rotor-br { bottom: -5px; right: -5px; }
+
+/* Inverser le sens pour 2 hélices (configuration X-quadcopter réaliste) */
+.drone-marker .rotor-tr,
+.drone-marker .rotor-bl {
+    animation-direction: reverse;
+    animation-duration: 0.17s;
+}
+
+@keyframes rotor-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* LEDs de navigation clignotantes (réalisme aéronautique) */
+.nav-led {
+    animation: led-blink 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px currentColor);
+}
+
+.nav-led-front { animation-delay: 0s; }
+.nav-led-back  { animation-delay: 0.7s; }
+
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.25; }
+}
+
+/* Indicateur de cargo (caisse rouge sous le drone quand carrying) */
+.drone-marker .cargo-box {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 10px;
+    background: linear-gradient(135deg, #d97706, #92400e);
+    border: 1px solid #fbbf24;
+    border-radius: 2px;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    z-index: 1;
+    animation: cargo-sway 1.5s ease-in-out infinite;
+}
+
+.drone-marker .cargo-box::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: rgba(255, 235, 60, 0.4);
+}
+
+@keyframes cargo-sway {
+    0%, 100% { transform: translateX(-50%) rotate(-2deg); }
+    50%      { transform: translateX(-50%) rotate(2deg); }
+}
+
+/* Couleurs par statut */
+.drone-marker.idle              { color: #34d399; }
+.drone-marker.moving_to_pickup  { color: #fbbf24; }
+.drone-marker.carrying          { color: #fb923c; }
+.drone-marker.moving_to_station { color: #fb7185; }
+.drone-marker.charging          { color: #d946ef; }
+
+/* Label du drone au-dessus (badge moderne) */
+.drone-label {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: white;
+    background: linear-gradient(135deg, rgba(12,16,32,0.95), rgba(20,28,48,0.95));
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+    text-shadow: 0 0 4px currentColor;
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.5),
+        0 0 8px currentColor;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+/* --- Station marker --- */
+.station-marker {
+    width: 32px; height: 32px;
+    position: relative;
+}
+
+.station-marker .body {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 16, 32, 0.9);
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px currentColor;
+    /* Hexagonal mask */
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    color: currentColor;
+}
+
+.station-marker .pulse {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.15;
+    animation: station-pulse 2s ease-in-out infinite;
+}
+
+@keyframes station-pulse {
+    0%, 100% { transform: scale(0.9); opacity: 0.1; }
+    50%      { transform: scale(1.1); opacity: 0.25; }
+}
+
+.station-marker.free { color: var(--neon-emerald); }
+.station-marker.busy { color: var(--neon-rose); }
+
+/* --- Customer marker --- */
+.customer-marker {
+    width: 26px; height: 26px;
+    color: var(--neon-rose);
+}
+
+.customer-marker .body {
+    width: 100%; height: 100%;
+    background: rgba(12, 16, 32, 0.85);
+    border: 2px solid currentColor;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.customer-marker .ping {
+    position: absolute;
+    inset: -4px;
+    border-radius: 8px;
+    border: 2px solid currentColor;
+    animation: customer-ping 1.8s ease-out infinite;
+    opacity: 0;
+}
+
+@keyframes customer-ping {
+    0%   { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* --- Pickup / Dropoff markers --- */
+.pickup-marker, .dropoff-marker {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    box-shadow: 0 0 12px currentColor;
+}
+
+.pickup-marker {
+    color: var(--neon-amber);
+    background: var(--neon-amber);
+}
+
+.dropoff-marker {
+    color: var(--neon-cyan);
+    background: var(--neon-cyan);
+}
+
+/* ---------- LEAFLET ROUTES (polylines) ---------- */
+.leaflet-route {
+    stroke-dasharray: 8 6;
+    animation: dash-flow 1.2s linear infinite;
+}
+
+@keyframes dash-flow {
+    to { stroke-dashoffset: -28; }
+}
+
+/* ---------- NUMBER ANIMATION ---------- */
+.stat-value {
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
+}
+
+.stat-up { color: var(--neon-emerald); }
+
+/* ============================================================================
+   PANNEAU FLOTTANT "PASSER UNE COMMANDE" + TOASTS
+   ============================================================================ */
+#order-panel {
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+#order-panel.collapsed #order-body {
+    display: none;
+}
+
+#order-panel.collapsed #order-chevron {
+    transform: rotate(-180deg);
+}
+
+/* Mode "select on map" : curseur croix sur la carte */
+.leaflet-container.selecting-pickup,
+.leaflet-container.selecting-dropoff {
+    cursor: crosshair !important;
+}
+
+/* Bouton "défini" (pickup/dropoff confirmés) */
+.btn-confirmed-pickup {
+    background: rgba(251, 191, 36, 0.35) !important;
+    border-color: rgba(251, 191, 36, 0.7) !important;
+    color: #fef3c7 !important;
+}
+
+.btn-confirmed-dropoff {
+    background: rgba(34, 211, 238, 0.35) !important;
+    border-color: rgba(34, 211, 238, 0.7) !important;
+    color: #cffafe !important;
+}
+
+/* Marker temporaire (pickup/dropoff en cours de définition) */
+.temp-marker {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 16px currentColor, 0 4px 12px rgba(0,0,0,0.4);
+    animation: temp-marker-pulse 1s ease-in-out infinite;
+}
+
+.temp-marker.pickup { background: #fbbf24; color: #fbbf24; }
+.temp-marker.dropoff { background: #22d3ee; color: #22d3ee; }
+
+@keyframes temp-marker-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+}
+
+/* ----- TOASTS (notifications) ----- */
+.toast {
+    pointer-events: auto;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(12, 16, 32, 0.95);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    color: #e2e8f0;
+    font-size: 13px;
+    min-width: 280px;
+    max-width: 360px;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.45),
+        0 0 24px rgba(34, 211, 238, 0.2);
+    animation: toast-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toast.success {
+    border-color: rgba(52, 211, 153, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(52, 211, 153, 0.25);
+}
+
+.toast.error {
+    border-color: rgba(251, 113, 133, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(251, 113, 133, 0.25);
+}
+
+@keyframes toast-slide-in {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-slide-out {
+    to   { opacity: 0; transform: translateX(40px); }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1280px) {
+    main {
+        grid-template-columns: 1fr !important;
+    }
+    main > aside, main > section {
+        grid-column: span 12 / span 12 !important;
+    }
+}
