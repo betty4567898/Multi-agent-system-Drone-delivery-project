@@ -195,8 +195,3 @@ Tu verras la carte de Fès avec les **drones qui volent en temps réel**, les co
 | Carte vide dans le navigateur | Vérifie que main.py a démarré sans erreur (regarde le terminal) |
 | Drones ne bougent pas | Attends ~10 secondes (le temps que les agents s'enregistrent et les commandes apparaissent) |
 
----
-
-## 📄 Voir aussi
-
-- [RAPPORT.md](RAPPORT.md) — Rapport académique complet (architecture, BDI, Contract-Net, ML, tests)
